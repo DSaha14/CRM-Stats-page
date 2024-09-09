@@ -1,113 +1,163 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import { Pie, Bar, Line } from 'react-chartjs-2';
+import DataTable from './components/DataTable'; // Adjust if needed
+import ProgressBar from './components/ProgressBar'; // Adjust if needed
+import Navbar from './components/Navbar'; // Adjust if needed
 
-export default function Home() {
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+} from 'chart.js';
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement
+);
+
+export default function CRMStats() {
+  const [timeWindow, setTimeWindow] = useState('1 day');
+  const [data, setData] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/data/dummyData.json');
+      const json = await response.json();
+      setData(json);
+    };
+
+    fetchData();
+  }, [timeWindow]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  if (!data) return <div className={`text-center py-8 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Loading...</div>;
+
+  const pieData = {
+    labels: data.salesByRegion.map((d) => d.region),
+    datasets: [
+      {
+        label: 'Sales by Region',
+        data: data.salesByRegion.map((d) => d.sales),
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+      },
+    ],
+  };
+
+  const barData = {
+    labels: data.salesOverTime.map((d) => d.period),
+    datasets: [
+      {
+        label: 'Sales Over Time',
+        data: data.salesOverTime.map((d) => d.sales),
+        backgroundColor: '#4CAF50',
+      },
+    ],
+  };
+
+  const lineData = {
+    labels: data.revenueTrends.map((d) => d.period),
+    datasets: [
+      {
+        label: 'Revenue Trends',
+        data: data.revenueTrends.map((d) => d.revenue),
+        borderColor: '#FF9800',
+        backgroundColor: 'rgba(255, 152, 0, 0.2)',
+        fill: true,
+      },
+    ],
+  };
+
+  // Example data for the DataTable component
+  const tableData = [
+    ['North America', '450', 'Jan', '12000'],
+    ['Europe', '300', 'Feb', '15000'],
+    ['Asia', '200', 'Mar', '20000'],
+  ];
+
+  const tableColumns = ['Region', 'Sales', 'Month', 'Revenue'];
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>
+      <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+      <div className="p-6">
+        <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between">
+          <label htmlFor="timeWindow" className={`mr-2 font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Select Time Window:</label>
+          <select
+            id="timeWindow"
+            value={timeWindow}
+            onChange={(e) => setTimeWindow(e.target.value)}
+            className={`p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${darkMode ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-800'}`}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            <option value="1 day">1 Day</option>
+            <option value="1 week">1 Week</option>
+            <option value="1 month">1 Month</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <StatCard title="Total Leads" value="1250"  />
+          <StatCard title="Total Sales" value="950" />
+          <StatCard title="Total Revenue" value="$78,500"  />
+        </div>
+
+        <div className={`bg-white shadow-lg rounded-lg p-4 mb-8 w-full lg:w-1/2 mx-auto ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-800'}`}>
+        <h2 className={`text-xl font-semibold mb-4 ${darkMode ? ' bg-gray-800 text-gray-100' : ' bg-white text-gray-800'}`}>Sales by Region</h2>
+          <div className="relative h-64">
+            <Pie data={pieData} options={{ maintainAspectRatio: false }} />
+          </div>
+        </div>
+
+        <div className={`bg-white shadow-lg rounded-lg p-4 mb-8 w-full lg:w-1/2 mx-auto ${darkMode ? 'bg-gray-800 text-gray-100' : 'text-gray-800'}`}>
+        <h2 className={`text-xl font-semibold mb-4 ${darkMode ? ' bg-gray-800 text-gray-100' : ' bg-white text-gray-800'}`}>Sales Over Time</h2>
+          <div className="relative h-64">
+            <Bar data={barData} options={{ maintainAspectRatio: false }} />
+          </div>
+        </div>
+
+        <div className={`bg-white shadow-lg rounded-lg p-4 mb-8 w-full lg:w-1/2 mx-auto ${darkMode ? 'bg-gray-800 text-gray-100' : 'text-gray-800'}`}>
+        <h2 className={`text-xl font-semibold mb-4 ${darkMode ? ' bg-gray-800 text-gray-100' : ' bg-white text-gray-800'}`}>Revenue Trends</h2>
+          <div className="relative h-64">
+            <Line data={lineData} options={{ maintainAspectRatio: false }} />
+          </div>
+        </div>
+
+        <div className={`bg-white shadow-lg rounded-lg p-4 mb-8 w-full lg:w-2/3 mx-auto ${darkMode ? 'bg-gray-800 text-gray-100' : 'text-gray-800'}`}>
+        <h2 className={`text-xl font-semibold mb-4 ${darkMode ? ' bg-gray-800 text-gray-100' : ' bg-white text-gray-800'}`}>Detailed Data Table</h2>
+          <DataTable columns={tableColumns} data={tableData} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ProgressBar title="Monthly Sales Target" value={400} max={500} />
+          <ProgressBar title="Annual Revenue Goal" value={30000} max={40000} />
+          <ProgressBar title="Customer Acquisition" value={800} max={1000} />
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+function StatCard({ title, value, darkMode }) {
+  return (
+    <div className={`bg-white shadow-lg rounded-lg p-4 flex flex-col items-center justify-center ${darkMode ? 'bg-gray-800 text-gray-100' : 'text-gray-800'}`}>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-2xl font-bold">{value}</p>
+    </div>
   );
 }

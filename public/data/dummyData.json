@@ -1,0 +1,22 @@
+{
+    "salesByRegion": [
+      { "region": "North America", "sales": 450 },
+      { "region": "Europe", "sales": 300 },
+      { "region": "Asia", "sales": 200 }
+    ],
+    "salesOverTime": [
+      { "period": "Jan", "sales": 120 },
+      { "period": "Feb", "sales": 150 },
+      { "period": "Mar", "sales": 200 },
+      { "period": "Apr", "sales": 170 },
+      { "period": "May", "sales": 180 }
+    ],
+    "revenueTrends": [
+      { "period": "Jan", "revenue": 15000 },
+      { "period": "Feb", "revenue": 18000 },
+      { "period": "Mar", "revenue": 20000 },
+      { "period": "Apr", "revenue": 22000 },
+      { "period": "May", "revenue": 25000 }
+    ]
+  }
+  
