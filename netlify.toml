@@ -1,0 +1,12 @@
+[build]
+  publish = "out"  # Output directory after build
+  command = "npm run build && npm run export"  # Build command
+
+[dev]
+  command = "npm run dev"
+  port = 3000
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
