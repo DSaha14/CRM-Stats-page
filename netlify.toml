@@ -1,12 +1,12 @@
 [build]
-  publish = "out"  # Output directory after build
-  command = "npm run build && npm run export"  # Build command
+publish = "out"  # The directory that contains the exported static files
+command = "npm run build"  # No need for npm run export anymore
 
 [dev]
-  command = "npm run dev"
-  port = 3000
+command = "npm run dev"
+port = 3000
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
